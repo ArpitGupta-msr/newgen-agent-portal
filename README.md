@@ -4,12 +4,14 @@ A full-stack microservice-based application for insurance agent registration, OT
 
 ## Tech Stack
 
-| Layer        | Technologies                                                                              |
-| ------------ | ----------------------------------------------------------------------------------------- |
+
+| Layer        | Technologies                                                                            |
+| ------------ | --------------------------------------------------------------------------------------- |
 | **Backend**  | Java 17, Spring Boot 3.2.5, Spring Cloud Gateway, Spring Data JPA, Consul, Resilience4j |
-| **Frontend** | React 19, Vite, Bootstrap 5, React Router, Axios                                          |
-| **Database** | MySQL 8.0                                                                                 |
-| **Infra**    | Docker, Consul (service discovery + load balancing)                                       |
+| **Frontend** | React 19, Vite, Bootstrap 5, React Router, Axios                                        |
+| **Database** | MySQL 8.0                                                                               |
+| **Infra**    | Docker, Consul (service discovery + load balancing)                                     |
+
 
 ## Architecture
 
@@ -33,13 +35,15 @@ A full-stack microservice-based application for insurance agent registration, OT
                      └─────────────────────────────────────────────────────────┘
 ```
 
-| Service              | Port(s)     | Description                                                                          |
-| -------------------- | ----------- | ------------------------------------------------------------------------------------ |
-| **portal-ui**        | 3000        | React SPA — signup flow, login, home                                                 |
-| **gateway-service**  | 8080        | Spring Cloud Gateway — single entry point, routes all `/newgen/**` to downstream services |
-| **agent-service**    | 8081 / 8082 | Agent registration, agency code validation, consent, credential setup & verification |
-| **otp-service**      | 8083 / 8084 | OTP generation, validation, resend logic                                             |
-| **login-service**    | 8085 / 8086 | Login via password or MPIN (calls agent-service)                                     |
+
+| Service             | Port(s)     | Description                                                                               |
+| ------------------- | ----------- | ----------------------------------------------------------------------------------------- |
+| **portal-ui**       | 3000        | React SPA — signup flow, login, home                                                      |
+| **gateway-service** | 8080        | Spring Cloud Gateway — single entry point, routes all `/newgen/`** to downstream services |
+| **agent-service**   | 8081 / 8082 | Agent registration, agency code validation, consent, credential setup & verification      |
+| **otp-service**     | 8083 / 8084 | OTP generation, validation, resend logic                                                  |
+| **login-service**   | 8085 / 8086 | Login via password or MPIN (calls agent-service)                                          |
+
 
 ## Prerequisites
 
@@ -132,8 +136,9 @@ portal-ui/src/
 - **Bootstrap 5** for styling — utility classes applied directly in JSX, no per-component CSS files
 - **Shared components** (`Button`, `FormInput`, `Logo`, `Stepper`, `SuccessScreen`) eliminate duplication
 - **Constants layer** centralizes error messages, validation rules, and role definitions
-- **Vite dev proxy** routes all `/newgen/**` to the gateway at `localhost:8080` — no CORS issues in development
+- **Vite dev proxy** routes all `/newgen/`** to the gateway at `localhost:8080` — no CORS issues in development
 - **No state management library** — React Router `state` is sufficient for this linear signup flow
+- **Already-registered guard** — if `validate-agency-code` returns `isRegistered: true`, the agent is redirected to `/login` with an informational message instead of proceeding through OTP and credential setup
 
 ## API Endpoints
 
@@ -145,6 +150,7 @@ All endpoints are prefixed with `/newgen`. In development, requests go through t
 
 ### Agent Service
 
+
 | Method | Endpoint                              | Description                  |
 | ------ | ------------------------------------- | ---------------------------- |
 | POST   | `/newgen/agents/signup`               | Register new agent with role |
@@ -154,7 +160,11 @@ All endpoints are prefixed with `/newgen`. In development, requests go through t
 | POST   | `/newgen/agents/set-mpin`             | Set 4-digit MPIN             |
 | GET    | `/newgen/agents/{agencyCode}`         | Get agent details            |
 
+`POST /newgen/agents/validate-agency-code` response includes an `isRegistered` boolean. When `true`, the agent has already completed registration; the frontend redirects them directly to `/login` instead of continuing the signup flow.
+
+
 ### OTP Service
+
 
 | Method | Endpoint               | Description                         |
 | ------ | ---------------------- | ----------------------------------- |
@@ -162,12 +172,15 @@ All endpoints are prefixed with `/newgen`. In development, requests go through t
 | POST   | `/newgen/otp/validate` | Validate OTP                        |
 | POST   | `/newgen/otp/resend`   | Resend OTP (max 2 resends)          |
 
+
 ### Login Service
+
 
 | Method | Endpoint                 | Description                       |
 | ------ | ------------------------ | --------------------------------- |
 | POST   | `/newgen/login/password` | Login with agency code + password |
 | POST   | `/newgen/login/mpin`     | Login with agency code + MPIN     |
+
 
 ## Testing
 
@@ -198,12 +211,14 @@ Run the collection sequentially using the Postman Collection Runner for a full e
 
 Agent service comes pre-loaded with 4 test agents:
 
+
 | Agency Code | Name         | Role  |
 | ----------- | ------------ | ----- |
 | AG001       | Rajesh Kumar | AGENT |
 | AG002       | Priya Sharma | DO    |
 | AG003       | Amit Patel   | CLIA  |
 | AG004       | Sneha Reddy  | LICA  |
+
 
 ## Stopping
 
@@ -215,3 +230,4 @@ Agent service comes pre-loaded with 4 test agents:
 # Stop infrastructure
 docker-compose down
 ```
+
