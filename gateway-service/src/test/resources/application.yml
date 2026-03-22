@@ -1,0 +1,22 @@
+spring:
+  cloud:
+    consul:
+      enabled: false
+      discovery:
+        enabled: false
+    gateway:
+      routes:
+        - id: agent-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/newgen/agents/**
+
+        - id: otp-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/newgen/otp/**
+
+        - id: login-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/newgen/login/**

@@ -4,42 +4,42 @@ A full-stack microservice-based application for insurance agent registration, OT
 
 ## Tech Stack
 
-
-| Layer        | Technologies                                                                   |
-| ------------ | ------------------------------------------------------------------------------ |
-| **Backend**  | Java 17, Spring Boot 3.2.5, Spring Data JPA, Spring Cloud Consul, Resilience4j |
-| **Frontend** | React 19, Vite, React Router, Axios                                            |
-| **Database** | MySQL 8.0                                                                      |
-| **Infra**    | Docker, Consul (service discovery + load balancing)                            |
-
+| Layer        | Technologies                                                                              |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| **Backend**  | Java 17, Spring Boot 3.2.5, Spring Cloud Gateway, Spring Data JPA, Consul, Resilience4j |
+| **Frontend** | React 19, Vite, Bootstrap 5, React Router, Axios                                          |
+| **Database** | MySQL 8.0                                                                                 |
+| **Infra**    | Docker, Consul (service discovery + load balancing)                                       |
 
 ## Architecture
 
 ```
-┌──────────────┐      ┌───────────────────────────────────────────────┐
-│  React SPA   │      │              Backend (Spring Boot)            │
-│  (port 3000) │─────▶│                                               │
-│              │      │  ┌──────────────┐  ┌───────────┐  ┌────────┐  │
-│  Welcome     │      │  │agent-service │  │otp-service│  │login-  │  │
-│  AgencyCode  │      │  │ :8081/:8082  │  │:8083/:8084│  │service │  │
-│  OTP Verify  │      │  │              │◀─│           │  │:8085/  │  │
-│  Set Creds   │      │  │  MySQL       │  │  MySQL    │  │:8086   │  │
-│  Login       │      │  │  (agent_db)  │  │  (otp_db) │  │        │  │
-│  Home        │      │  └──────────────┘  └───────────┘  └────────┘  │
-└──────────────┘      │         ▲               ▲              ▲      │
-                      │         └───────────────┘──────────────┘      │
-                      │                    Consul                     │
-                      └───────────────────────────────────────────────┘
+┌──────────────┐     ┌─────────────────────────────────────────────────────────┐
+│  React SPA   │     │                   Backend (Spring Boot)                  │
+│  (port 3000) │────▶│                                                          │
+│              │     │  ┌────────────────┐                                      │
+│  Welcome     │     │  │gateway-service │                                      │
+│  AgencyCode  │     │  │   :8080        │                                      │
+│  OTP Verify  │     │  └───────┬────────┘                                      │
+│  Set Creds   │     │          │ routes via Consul lb://                        │
+│  Login       │     │  ┌───────▼──────┐  ┌───────────┐  ┌──────────────┐      │
+│  Home        │     │  │agent-service │  │otp-service│  │login-service │      │
+└──────────────┘     │  │ :8081/:8082  │  │:8083/:8084│  │ :8085/:8086  │      │
+                     │  │              │◀─│           │  │              │      │
+                     │  │  MySQL       │  │  MySQL    │  │  (stateless) │      │
+                     │  │  (agent_db)  │  │  (otp_db) │  │              │      │
+                     │  └──────────────┘  └───────────┘  └──────────────┘      │
+                     │                         Consul                           │
+                     └─────────────────────────────────────────────────────────┘
 ```
 
-
-| Service           | Port(s)     | Description                                                                          |
-| ----------------- | ----------- | ------------------------------------------------------------------------------------ |
-| **frontend**      | 3000        | React SPA — signup flow, login, home                                                 |
-| **agent-service** | 8081 / 8082 | Agent registration, agency code validation, consent, credential setup & verification |
-| **otp-service**   | 8083 / 8084 | OTP generation, validation, resend logic                                             |
-| **login-service** | 8085 / 8086 | Login via password or MPIN (calls agent-service)                                     |
-
+| Service              | Port(s)     | Description                                                                          |
+| -------------------- | ----------- | ------------------------------------------------------------------------------------ |
+| **portal-ui**        | 3000        | React SPA — signup flow, login, home                                                 |
+| **gateway-service**  | 8080        | Spring Cloud Gateway — single entry point, routes all `/newgen/**` to downstream services |
+| **agent-service**    | 8081 / 8082 | Agent registration, agency code validation, consent, credential setup & verification |
+| **otp-service**      | 8083 / 8084 | OTP generation, validation, resend logic                                             |
+| **login-service**    | 8085 / 8086 | Login via password or MPIN (calls agent-service)                                     |
 
 ## Prerequisites
 
@@ -63,35 +63,40 @@ This starts:
 
 ### 2. Build & Start Backend
 
-```bash
-mvn clean install
+Each service is an independent Maven project. Start them in separate terminals:
 
+```bash
 # Terminal 1 - Agent Service
-mvn spring-boot:run -pl agent-service
+cd agent-service && mvn spring-boot:run
 
 # Terminal 2 - OTP Service
-mvn spring-boot:run -pl otp-service
+cd otp-service && mvn spring-boot:run
 
 # Terminal 3 - Login Service
-mvn spring-boot:run -pl login-service
+cd login-service && mvn spring-boot:run
+
+# Terminal 4 - API Gateway (start last)
+cd gateway-service && mvn spring-boot:run
 ```
 
 ### 3. Start Frontend
 
 ```bash
-cd frontend
+cd portal-ui
 npm install
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+All API requests are proxied through the gateway at `localhost:8080` — no CORS issues in development.
+
 ### 4. (Optional) Start Second Instances for Load Balancing
 
 ```bash
-mvn spring-boot:run -pl agent-service -Dspring-boot.run.arguments="--server.port=8082"
-mvn spring-boot:run -pl otp-service -Dspring-boot.run.arguments="--server.port=8084"
-mvn spring-boot:run -pl login-service -Dspring-boot.run.arguments="--server.port=8086"
+cd agent-service && mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8082"
+cd otp-service && mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8084"
+cd login-service && mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8086"
 ```
 
 ## Frontend
@@ -99,7 +104,7 @@ mvn spring-boot:run -pl login-service -Dspring-boot.run.arguments="--server.port
 ### Project Structure
 
 ```
-frontend/src/
+portal-ui/src/
 ├── components/
 │   ├── common/              # Reusable UI components
 │   │   ├── Button           # Primary/secondary/link variants with loading state
@@ -124,22 +129,21 @@ frontend/src/
 
 ### Design Decisions
 
-- **CSS Modules** per component for style encapsulation — no class name collisions
+- **Bootstrap 5** for styling — utility classes applied directly in JSX, no per-component CSS files
 - **Shared components** (`Button`, `FormInput`, `Logo`, `Stepper`, `SuccessScreen`) eliminate duplication
 - **Constants layer** centralizes error messages, validation rules, and role definitions
-- **Vite dev proxy** routes `/newgen/`* to backend services — no CORS issues in development
+- **Vite dev proxy** routes all `/newgen/**` to the gateway at `localhost:8080` — no CORS issues in development
 - **No state management library** — React Router `state` is sufficient for this linear signup flow
 
 ## API Endpoints
 
-All endpoints are prefixed with `/newgen`. Swagger UI is available at:
+All endpoints are prefixed with `/newgen`. In development, requests go through the gateway (`localhost:8080`) which routes to the appropriate service. Swagger UI is available per service:
 
 - Agent Service: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
 - OTP Service: [http://localhost:8083/swagger-ui.html](http://localhost:8083/swagger-ui.html)
 - Login Service: [http://localhost:8085/swagger-ui.html](http://localhost:8085/swagger-ui.html)
 
-### Agent Service (port 8081)
-
+### Agent Service
 
 | Method | Endpoint                              | Description                  |
 | ------ | ------------------------------------- | ---------------------------- |
@@ -150,9 +154,7 @@ All endpoints are prefixed with `/newgen`. Swagger UI is available at:
 | POST   | `/newgen/agents/set-mpin`             | Set 4-digit MPIN             |
 | GET    | `/newgen/agents/{agencyCode}`         | Get agent details            |
 
-
-### OTP Service (port 8083)
-
+### OTP Service
 
 | Method | Endpoint               | Description                         |
 | ------ | ---------------------- | ----------------------------------- |
@@ -160,25 +162,24 @@ All endpoints are prefixed with `/newgen`. Swagger UI is available at:
 | POST   | `/newgen/otp/validate` | Validate OTP                        |
 | POST   | `/newgen/otp/resend`   | Resend OTP (max 2 resends)          |
 
-
-### Login Service (port 8085)
-
+### Login Service
 
 | Method | Endpoint                 | Description                       |
 | ------ | ------------------------ | --------------------------------- |
 | POST   | `/newgen/login/password` | Login with agency code + password |
 | POST   | `/newgen/login/mpin`     | Login with agency code + MPIN     |
 
-
 ## Testing
 
 ### Backend Unit Tests
 
 ```bash
-mvn test
+cd agent-service && mvn test   # 18 tests
+cd otp-service && mvn test     # 8 tests
+cd login-service && mvn test   # 6 tests
 ```
 
-32 tests across all three services (18 + 8 + 6).
+32 tests across all three services, minimum 80% code coverage.
 
 ### Postman
 
@@ -197,7 +198,6 @@ Run the collection sequentially using the Postman Collection Runner for a full e
 
 Agent service comes pre-loaded with 4 test agents:
 
-
 | Agency Code | Name         | Role  |
 | ----------- | ------------ | ----- |
 | AG001       | Rajesh Kumar | AGENT |
@@ -205,15 +205,13 @@ Agent service comes pre-loaded with 4 test agents:
 | AG003       | Amit Patel   | CLIA  |
 | AG004       | Sneha Reddy  | LICA  |
 
-
 ## Stopping
 
 ```bash
 # Stop microservices: Ctrl+C in each terminal
 
-# Stop frontend: Ctrl+C
+# Stop portal-ui: Ctrl+C
 
 # Stop infrastructure
 docker-compose down
 ```
-

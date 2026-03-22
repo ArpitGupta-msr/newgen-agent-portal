@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: gateway-service
+        instance-id: ${spring.application.name}:${server.port}
+        health-check-interval: 10s
+    gateway:
+      routes:
+        - id: agent-service
+          uri: lb://agent-service
+          predicates:
+            - Path=/newgen/agents/**
+
+        - id: otp-service
+          uri: lb://otp-service
+          predicates:
+            - Path=/newgen/otp/**
+
+        - id: login-service
+          uri: lb://login-service
+          predicates:
+            - Path=/newgen/login/**
