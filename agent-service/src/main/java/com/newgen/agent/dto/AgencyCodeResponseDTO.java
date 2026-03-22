@@ -13,4 +13,5 @@ public class AgencyCodeResponseDTO {
     private boolean valid;
     private String agentName;
     private String message;
+    private boolean isRegistered;
 }

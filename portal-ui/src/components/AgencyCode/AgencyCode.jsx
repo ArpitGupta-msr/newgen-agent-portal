@@ -28,6 +28,10 @@ function AgencyCode() {
     try {
       const res = await agentService.validateAgencyCode(agencyCode);
       if (res.data.valid) {
+        if (res.data.isRegistered) {
+          navigate('/login', { state: { message: 'You are already registered. Please login.' } });
+          return;
+        }
         setCodeValidated(true);
         setAgentName(res.data.agentName || '');
       } else {

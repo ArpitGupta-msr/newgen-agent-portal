@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { loginService } from '../../services/api';
 import { ERRORS } from '../../constants/messages';
 import { MPIN_LENGTH } from '../../constants/validation';
@@ -15,6 +15,8 @@ function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const infoMessage = location.state?.message || '';
 
   const handleMpinChange = (value) => {
     if (/^\d{0,4}$/.test(value)) {
@@ -70,6 +72,8 @@ function Login() {
 
       <h2 className="h5 fw-semibold mb-1">Login</h2>
       <p className="text-muted small mb-4">Access your account securely</p>
+
+      {infoMessage && <div className="alert alert-info small py-2">{infoMessage}</div>}
 
       <ul className="nav nav-tabs mb-4">
         <li className="nav-item">

@@ -55,6 +55,7 @@ public class AgentServiceImpl implements AgentService {
                         .valid(true)
                         .agentName(agent.getName())
                         .message("Agency code is valid.")
+                        .isRegistered(Boolean.TRUE.equals(agent.getIsRegistered()))
                         .build())
                 .orElseThrow(() -> new InvalidAgencyCodeException(
                         "Incorrect agency code, please enter a valid code."));
