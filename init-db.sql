@@ -1,0 +1,2 @@
+CREATE DATABASE IF NOT EXISTS newgen_agent_db;
+CREATE DATABASE IF NOT EXISTS newgen_otp_db;

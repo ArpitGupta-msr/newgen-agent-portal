@@ -1,0 +1,39 @@
+.otpGroup {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.otpGroup input {
+  width: 50px;
+  height: 55px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.otpGroup input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.resendRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 0.82rem;
+  color: #888;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 0.82rem;
+  text-align: center;
+  margin-bottom: 12px;
+}

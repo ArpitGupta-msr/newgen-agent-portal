@@ -1,0 +1,30 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: agent-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/newgen_agent_db
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  sql:
+    init:
+      mode: always
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: agent-service
+        instance-id: ${spring.application.name}:${server.port}
+        health-check-interval: 10s

@@ -1,0 +1,29 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: login-service
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: login-service
+        instance-id: ${spring.application.name}:${server.port}
+        health-check-interval: 10s
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      agentService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 60s
+        minimum-number-of-calls: 10
+        slow-call-duration-threshold: 3s
+        slow-call-rate-threshold: 50
+  timelimiter:
+    instances:
+      agentService:
+        timeout-duration: 3s

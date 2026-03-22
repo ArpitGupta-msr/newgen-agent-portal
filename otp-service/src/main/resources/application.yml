@@ -1,0 +1,41 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: otp-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/newgen_otp_db
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: otp-service
+        instance-id: ${spring.application.name}:${server.port}
+        health-check-interval: 10s
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      agentService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 60s
+        minimum-number-of-calls: 10
+        slow-call-duration-threshold: 3s
+        slow-call-rate-threshold: 50
+  timelimiter:
+    instances:
+      agentService:
+        timeout-duration: 3s

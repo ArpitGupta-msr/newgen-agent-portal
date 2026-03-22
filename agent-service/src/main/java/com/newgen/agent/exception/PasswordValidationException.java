@@ -1,0 +1,8 @@
+package com.newgen.agent.exception;
+
+public class PasswordValidationException extends RuntimeException {
+
+    public PasswordValidationException(String message) {
+        super(message);
+    }
+}

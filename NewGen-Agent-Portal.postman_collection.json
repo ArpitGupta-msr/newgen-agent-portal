@@ -1,0 +1,689 @@
+{
+  "info": {
+    "name": "NewGen Agent Portal",
+    "description": "API collection for NewGen Insurance Agent Portal microservices",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "agent_service_url", "value": "http://localhost:8081" },
+    { "key": "otp_service_url", "value": "http://localhost:8083" },
+    { "key": "login_service_url", "value": "http://localhost:8085" },
+    { "key": "agency_code", "value": "AG001" },
+    { "key": "otp_code", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Agent Registration Flow",
+      "item": [
+        {
+          "name": "1.1 Sign Up - New Agent",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/signup", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "signup"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"AG010\",\n  \"name\": \"Test Agent\",\n  \"role\": \"AGENT\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Response has agentId', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.agentId).to.not.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Sign Up - Duplicate Agency Code (Error)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/signup", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "signup"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"AG001\",\n  \"name\": \"Duplicate Agent\",\n  \"role\": \"AGENT\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.3 Sign Up - Missing Fields (Validation Error)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/signup", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "signup"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"\",\n  \"name\": \"\",\n  \"role\": null\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has validation error message', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('Please provide a valid');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Agency Code Validation & Consent",
+      "item": [
+        {
+          "name": "2.1 Validate Agency Code - Valid",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/validate-agency-code", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "validate-agency-code"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Agency code is valid', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.valid).to.be.true;",
+                  "    pm.expect(jsonData.agentName).to.not.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Validate Agency Code - Invalid",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/validate-agency-code", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "validate-agency-code"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"INVALID_CODE\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error message matches spec', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.eql('Incorrect agency code, please enter a valid code.');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Record Consent",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/consent", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "consent"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\",\n  \"consentGiven\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Consent recorded', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('Consent recorded');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. OTP Verification",
+      "item": [
+        {
+          "name": "3.1 Generate OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{otp_service_url}}/newgen/otp/generate", "host": ["{{otp_service_url}}"], "path": ["newgen", "otp", "generate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('OTP sent successfully', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.otpSent).to.be.true;",
+                  "});",
+                  "// Extract OTP from message for next request",
+                  "var msg = pm.response.json().message;",
+                  "var otp = msg.match(/\\d{6}/);",
+                  "if (otp) { pm.collectionVariables.set('otp_code', otp[0]); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Validate OTP - Correct",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{otp_service_url}}/newgen/otp/validate", "host": ["{{otp_service_url}}"], "path": ["newgen", "otp", "validate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\",\n  \"otpCode\": \"{{otp_code}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('OTP validated with welcome message', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.valid).to.be.true;",
+                  "    pm.expect(jsonData.message).to.include('Your verification has been done successfully');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Validate OTP - Incorrect",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{otp_service_url}}/newgen/otp/validate", "host": ["{{otp_service_url}}"], "path": ["newgen", "otp", "validate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\",\n  \"otpCode\": \"000000\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error message matches spec', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.eql('Incorrect OTP, please try again');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{otp_service_url}}/newgen/otp/resend", "host": ["{{otp_service_url}}"], "path": ["newgen", "otp", "resend"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('OTP resent or interval error', function () {",
+                  "    pm.expect([200, 429]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Credential Setup - Password",
+      "item": [
+        {
+          "name": "4.1 Set Password - Success",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/set-password", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "set-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\",\n  \"password\": \"StrongPass@1\",\n  \"confirmPassword\": \"StrongPass@1\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Password set successfully', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.message).to.include('set up successfully');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.2 Set Password - Mismatch",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/set-password", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "set-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\",\n  \"password\": \"StrongPass@1\",\n  \"confirmPassword\": \"DifferentPass@2\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error: Passwords do not match', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.eql('Passwords do not match');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Set Password - Weak Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/set-password", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "set-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\",\n  \"password\": \"weak\",\n  \"confirmPassword\": \"weak\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error: Password criteria not met', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('Password does not meet the recommended criteria');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Credential Setup - MPIN",
+      "item": [
+        {
+          "name": "5.1 Set MPIN - Success",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/set-mpin", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "set-mpin"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"AG002\",\n  \"mpin\": \"1234\",\n  \"confirmMpin\": \"1234\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('MPIN set successfully', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.message).to.include('MPIN has been set up successfully');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.2 Set MPIN - Mismatch",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/set-mpin", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "set-mpin"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"AG002\",\n  \"mpin\": \"1234\",\n  \"confirmMpin\": \"5678\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error: MPINs do not match', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.eql('MPINs do not match');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.3 Set MPIN - Invalid Format (not 4 digits)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/set-mpin", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "set-mpin"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"AG002\",\n  \"mpin\": \"12\",\n  \"confirmMpin\": \"12\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('MPIN validation error', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('MPIN must be exactly 4 digits');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Agent Login",
+      "item": [
+        {
+          "name": "6.1 Login with Password - Success",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{login_service_url}}/newgen/login/password", "host": ["{{login_service_url}}"], "path": ["newgen", "login", "password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\",\n  \"password\": \"StrongPass@1\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Login successful with welcome message', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.message).to.include('Welcome');",
+                  "    pm.expect(jsonData.agentName).to.not.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.2 Login with Password - Incorrect",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{login_service_url}}/newgen/login/password", "host": ["{{login_service_url}}"], "path": ["newgen", "login", "password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"{{agency_code}}\",\n  \"password\": \"WrongPassword@1\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Login failed with error message', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.message).to.eql('Incorrect password. Please try again');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.3 Login with MPIN - Success",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{login_service_url}}/newgen/login/mpin", "host": ["{{login_service_url}}"], "path": ["newgen", "login", "mpin"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"AG002\",\n  \"mpin\": \"1234\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('MPIN login successful', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.message).to.include('Welcome');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.4 Login with MPIN - Incorrect",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{login_service_url}}/newgen/login/mpin", "host": ["{{login_service_url}}"], "path": ["newgen", "login", "mpin"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"AG002\",\n  \"mpin\": \"0000\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('MPIN login failed', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.message).to.eql('Incorrect MPIN. Please try again.');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.5 Login - Empty Fields (Validation)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{login_service_url}}/newgen/login/password", "host": ["{{login_service_url}}"], "path": ["newgen", "login", "password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agencyCode\": \"\",\n  \"password\": \"\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Validation error messages', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('Please provide a valid');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Internal APIs",
+      "item": [
+        {
+          "name": "7.1 Get Agent Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/{{agency_code}}", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "{{agency_code}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Agent details returned', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.agencyCode).to.eql(pm.collectionVariables.get('agency_code'));",
+                  "    pm.expect(jsonData.name).to.not.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.2 Get Agent - Not Found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{agent_service_url}}/newgen/agents/INVALID_CODE", "host": ["{{agent_service_url}}"], "path": ["newgen", "agents", "INVALID_CODE"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

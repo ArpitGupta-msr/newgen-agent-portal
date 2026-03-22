@@ -1,0 +1,24 @@
+.consentRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 10px;
+}
+
+.consentRow input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #667eea;
+  cursor: pointer;
+}
+
+.consentRow label {
+  font-size: 0.82rem;
+  color: #666;
+  cursor: pointer;
+  line-height: 1.4;
+}
