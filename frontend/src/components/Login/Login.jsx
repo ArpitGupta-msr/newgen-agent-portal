@@ -6,7 +6,6 @@ import { MPIN_LENGTH } from '../../constants/validation';
 import Logo from '../common/Logo';
 import FormInput from '../common/FormInput';
 import Button from '../common/Button';
-import styles from './Login.module.css';
 
 function Login() {
   const [loginMethod, setLoginMethod] = useState('password');
@@ -66,26 +65,30 @@ function Login() {
   };
 
   return (
-    <div className="container">
+    <div className="page-card">
       <Logo />
 
-      <h2>Login</h2>
-      <p className="subtitle">Access your account securely</p>
+      <h2 className="h5 fw-semibold mb-1">Login</h2>
+      <p className="text-muted small mb-4">Access your account securely</p>
 
-      <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${loginMethod === 'password' ? styles.active : ''}`}
-          onClick={() => { setLoginMethod('password'); setError(''); }}
-        >
-          Password
-        </button>
-        <button
-          className={`${styles.tab} ${loginMethod === 'mpin' ? styles.active : ''}`}
-          onClick={() => { setLoginMethod('mpin'); setError(''); }}
-        >
-          MPIN
-        </button>
-      </div>
+      <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${loginMethod === 'password' ? 'active' : ''}`}
+            onClick={() => { setLoginMethod('password'); setError(''); }}
+          >
+            Password
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${loginMethod === 'mpin' ? 'active' : ''}`}
+            onClick={() => { setLoginMethod('mpin'); setError(''); }}
+          >
+            MPIN
+          </button>
+        </li>
+      </ul>
 
       <form onSubmit={handleSubmit}>
         <FormInput
@@ -115,15 +118,15 @@ function Login() {
           />
         )}
 
-        {error && <div className={styles.error}>{error}</div>}
+        {error && <div className="text-danger small mb-3">{error}</div>}
 
         <Button type="submit" loading={loading}>
           {loading ? 'Logging in...' : 'Login'}
         </Button>
       </form>
 
-      <div className={styles.navLinks}>
-        Don't have an account? <Link to="/">Sign Up</Link>
+      <div className="text-center mt-3 small">
+        Don&apos;t have an account? <Link to="/">Sign Up</Link>
       </div>
     </div>
   );

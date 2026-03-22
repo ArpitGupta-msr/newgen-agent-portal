@@ -6,7 +6,6 @@ import Logo from '../common/Logo';
 import Stepper from '../common/Stepper';
 import FormInput from '../common/FormInput';
 import Button from '../common/Button';
-import styles from './AgencyCode.module.css';
 
 function AgencyCode() {
   const [agencyCode, setAgencyCode] = useState('');
@@ -58,12 +57,12 @@ function AgencyCode() {
   };
 
   return (
-    <div className="container">
+    <div className="page-card">
       <Logo />
       <Stepper currentStep={2} />
 
-      <h2>Agency Verification</h2>
-      <p className="subtitle">Enter your agency code to proceed</p>
+      <h2 className="h5 fw-semibold mb-1">Agency Verification</h2>
+      <p className="text-muted small mb-4">Enter your agency code to proceed</p>
 
       <FormInput
         label="Agency Code"
@@ -92,14 +91,15 @@ function AgencyCode() {
 
       {codeValidated && (
         <>
-          <div className={styles.consentRow}>
+          <div className="form-check mb-3">
             <input
               type="checkbox"
+              className="form-check-input"
               id="consent"
               checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
             />
-            <label htmlFor="consent">
+            <label className="form-check-label small" htmlFor="consent">
               I agree to the terms and conditions and acknowledge the privacy policy.
             </label>
           </div>

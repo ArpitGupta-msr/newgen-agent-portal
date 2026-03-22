@@ -65,12 +65,12 @@ function SetMpin() {
   }
 
   return (
-    <div className="container">
+    <div className="page-card">
       <Logo />
       <Stepper currentStep={4} />
 
-      <h2>Set MPIN</h2>
-      <p className="subtitle">Create a 4-digit MPIN for quick login</p>
+      <h2 className="h5 fw-semibold mb-1">Set MPIN</h2>
+      <p className="text-muted small mb-4">Create a 4-digit MPIN for quick login</p>
 
       <form onSubmit={handleSubmit}>
         <FormInput
@@ -94,7 +94,7 @@ function SetMpin() {
           error={confirmMpin && mpin !== confirmMpin ? ERRORS.MPIN_MISMATCH : ''}
         />
 
-        {error && <div style={{ color: '#e74c3c', fontSize: '0.82rem', marginBottom: 12 }}>{error}</div>}
+        {error && <div className="text-danger small mb-3">{error}</div>}
 
         <Button
           type="submit"

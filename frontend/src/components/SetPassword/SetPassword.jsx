@@ -8,7 +8,6 @@ import Stepper from '../common/Stepper';
 import FormInput from '../common/FormInput';
 import Button from '../common/Button';
 import SuccessScreen from '../common/SuccessScreen';
-import styles from './SetPassword.module.css';
 
 function SetPassword() {
   const [password, setPassword] = useState('');
@@ -61,12 +60,12 @@ function SetPassword() {
   }
 
   return (
-    <div className="container">
+    <div className="page-card">
       <Logo />
       <Stepper currentStep={4} />
 
-      <h2>Set Password</h2>
-      <p className="subtitle">Create a strong password for your account</p>
+      <h2 className="h5 fw-semibold mb-1">Set Password</h2>
+      <p className="text-muted small mb-4">Create a strong password for your account</p>
 
       <form onSubmit={handleSubmit}>
         <FormInput
@@ -78,12 +77,9 @@ function SetPassword() {
         />
 
         {password && (
-          <div className={styles.checks}>
+          <div className="mb-3">
             {PASSWORD_RULES.map((check, i) => (
-              <div
-                key={i}
-                className={`${styles.check} ${check.test(password) ? styles.pass : styles.fail}`}
-              >
+              <div key={i} className={`small ${check.test(password) ? 'text-success' : 'text-danger'}`}>
                 {check.test(password) ? '\u2713' : '\u2717'} {check.label}
               </div>
             ))}
@@ -99,7 +95,7 @@ function SetPassword() {
           error={confirmPassword && password !== confirmPassword ? ERRORS.PASSWORD_MISMATCH : ''}
         />
 
-        {error && <div className={styles.error}>{error}</div>}
+        {error && <div className="text-danger small mb-3">{error}</div>}
 
         <Button
           type="submit"

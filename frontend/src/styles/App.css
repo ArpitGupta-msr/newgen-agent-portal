@@ -1,17 +1,8 @@
-/* ===== Global Reset & Layout ===== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* ===== Global Layout ===== */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 #root {
@@ -23,8 +14,8 @@ body {
   padding: 20px;
 }
 
-/* ===== Shared Container (used by all pages) ===== */
-.container {
+/* ===== Shared Card (used by all pages) ===== */
+.page-card {
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
@@ -45,15 +36,12 @@ body {
   }
 }
 
-/* ===== Shared Typography ===== */
-h2 {
-  color: #333;
-  font-size: 1.3rem;
-  margin-bottom: 6px;
-}
-
-.subtitle {
-  color: #777;
-  font-size: 0.9rem;
-  margin-bottom: 24px;
+/* ===== OTP Input ===== */
+.otp-input {
+  width: 44px !important;
+  height: 44px;
+  padding: 0 !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
 }

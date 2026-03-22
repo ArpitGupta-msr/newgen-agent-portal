@@ -2,7 +2,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { SUCCESS } from '../../constants/messages';
 import Button from '../common/Button';
-import styles from './Home.module.css';
 
 function Home() {
   const location = useLocation();
@@ -18,16 +17,19 @@ function Home() {
     : '?';
 
   return (
-    <div className="container">
-      <div className={styles.wrapper}>
-        <div className={styles.avatar}>{initials}</div>
-        <h2>Welcome, {agentName}!</h2>
-        <span className={styles.badge}>{agencyCode}</span>
-        <p className="subtitle">{SUCCESS.LOGIN}</p>
-        <Button variant="secondary" onClick={() => navigate('/')} style={{ marginTop: 16 }}>
-          Logout
-        </Button>
+    <div className="page-card text-center">
+      <div
+        className="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+        style={{ width: 80, height: 80, fontSize: '1.5rem', fontWeight: 600 }}
+      >
+        {initials}
       </div>
+      <h2 className="h5 fw-semibold mb-2">Welcome, {agentName}!</h2>
+      <span className="badge bg-secondary mb-3">{agencyCode}</span>
+      <p className="text-muted small">{SUCCESS.LOGIN}</p>
+      <Button variant="secondary" onClick={() => navigate('/')} style={{ marginTop: 16 }}>
+        Logout
+      </Button>
     </div>
   );
 }

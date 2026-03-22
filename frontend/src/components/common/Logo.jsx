@@ -1,10 +1,8 @@
-import styles from './Logo.module.css';
-
 function Logo() {
   return (
-    <div className={styles.logo}>
-      <h1 className={styles.title}>NewGen Insurance</h1>
-      <span className={styles.subtitle}>Agent Portal</span>
+    <div className="text-center mb-3">
+      <h4 className="fw-bold text-primary mb-0">NewGen Insurance</h4>
+      <small className="text-muted">Agent Portal</small>
     </div>
   );
 }

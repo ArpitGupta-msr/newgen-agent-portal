@@ -7,7 +7,6 @@ import Logo from '../common/Logo';
 import Stepper from '../common/Stepper';
 import Button from '../common/Button';
 import SuccessScreen from '../common/SuccessScreen';
-import styles from './OtpVerification.module.css';
 
 function OtpVerification() {
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
@@ -127,14 +126,14 @@ function OtpVerification() {
   };
 
   return (
-    <div className="container">
+    <div className="page-card">
       <Logo />
       <Stepper currentStep={3} />
 
-      <h2>OTP Verification</h2>
-      <p className="subtitle">Enter the 6-digit code sent to your registered device</p>
+      <h2 className="h5 fw-semibold mb-1">OTP Verification</h2>
+      <p className="text-muted small mb-4">Enter the 6-digit code sent to your registered device</p>
 
-      <div className={styles.otpGroup} onPaste={handlePaste}>
+      <div className="d-flex gap-2 justify-content-center mb-3" onPaste={handlePaste}>
         {otp.map((digit, index) => (
           <input
             key={index}
@@ -146,13 +145,14 @@ function OtpVerification() {
             onChange={(e) => handleOtpChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             autoFocus={index === 0}
+            className="form-control otp-input"
           />
         ))}
       </div>
 
-      {error && <div className={styles.error}>{error}</div>}
+      {error && <div className="text-danger small mb-3">{error}</div>}
 
-      <div className={styles.resendRow}>
+      <div className="d-flex justify-content-between align-items-center mb-3 small text-muted">
         <span>
           {resendCount >= MAX_OTP_RESENDS
             ? 'Max resend attempts reached'

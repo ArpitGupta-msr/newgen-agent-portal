@@ -1,16 +1,17 @@
-import styles from './Stepper.module.css';
-
 const TOTAL_STEPS = 4;
 
 function Stepper({ currentStep }) {
   return (
-    <div className={styles.stepper}>
+    <div className="d-flex gap-2 mb-4">
       {Array.from({ length: TOTAL_STEPS }, (_, i) => {
         const step = i + 1;
-        let className = styles.step;
-        if (step < currentStep) className += ` ${styles.completed}`;
-        else if (step === currentStep) className += ` ${styles.active}`;
-        return <div key={step} className={className} />;
+        const bgClass =
+          step < currentStep
+            ? 'bg-success'
+            : step === currentStep
+            ? 'bg-primary'
+            : 'bg-secondary bg-opacity-25';
+        return <div key={step} className={`flex-fill rounded-pill ${bgClass}`} style={{ height: 6 }} />;
       })}
     </div>
   );

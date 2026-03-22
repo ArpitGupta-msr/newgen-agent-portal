@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../common/Logo';
 import Stepper from '../common/Stepper';
 import Button from '../common/Button';
-import styles from './SetCredential.module.css';
 
 function SetCredential() {
   const [credType, setCredType] = useState('password');
@@ -17,29 +16,33 @@ function SetCredential() {
   };
 
   return (
-    <div className="container">
+    <div className="page-card">
       <Logo />
       <Stepper currentStep={4} />
 
-      <h2>Set Up Credentials</h2>
-      <p className="subtitle">Choose your preferred login method</p>
+      <h2 className="h5 fw-semibold mb-1">Set Up Credentials</h2>
+      <p className="text-muted small mb-4">Choose your preferred login method</p>
 
-      <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${credType === 'password' ? styles.active : ''}`}
-          onClick={() => setCredType('password')}
-        >
-          Password
-        </button>
-        <button
-          className={`${styles.tab} ${credType === 'mpin' ? styles.active : ''}`}
-          onClick={() => setCredType('mpin')}
-        >
-          MPIN
-        </button>
-      </div>
+      <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${credType === 'password' ? 'active' : ''}`}
+            onClick={() => setCredType('password')}
+          >
+            Password
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${credType === 'mpin' ? 'active' : ''}`}
+            onClick={() => setCredType('mpin')}
+          >
+            MPIN
+          </button>
+        </li>
+      </ul>
 
-      <p className={styles.description}>
+      <p className="text-muted small mb-4">
         {credType === 'password'
           ? 'Set a strong password with uppercase, lowercase, numbers, and symbols.'
           : 'Set a 4-digit numeric MPIN for quick and easy login.'}

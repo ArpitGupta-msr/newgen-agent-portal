@@ -1,15 +1,12 @@
 import Button from './Button';
-import styles from './SuccessScreen.module.css';
 
 function SuccessScreen({ title, message, buttonText, onButtonClick }) {
   return (
-    <div className="container">
-      <div className={styles.wrapper}>
-        <div className={styles.checkmark}>&#10003;</div>
-        <h2 className={styles.title}>{title}</h2>
-        <p className={styles.message}>{message}</p>
-        <Button onClick={onButtonClick}>{buttonText}</Button>
-      </div>
+    <div className="page-card text-center">
+      <div className="display-4 text-success mb-3">&#10003;</div>
+      <h2 className="h4 mb-2">{title}</h2>
+      <p className="text-muted mb-4">{message}</p>
+      <Button onClick={onButtonClick}>{buttonText}</Button>
     </div>
   );
 }
