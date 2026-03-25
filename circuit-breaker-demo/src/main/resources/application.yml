@@ -1,0 +1,93 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: circuit-breaker-demo
+
+# =============================================================================
+# Resilience4j Circuit Breaker Configuration
+# =============================================================================
+# A circuit breaker monitors calls to a remote service and "trips open" when
+# too many failures (or slow calls) are recorded within a sliding window.
+# Once open, further calls are immediately short-circuited to the fallback
+# method without hitting the downstream service, giving it time to recover.
+#
+# State machine:
+#   CLOSED  ──► OPEN  ──(wait-duration)──► HALF_OPEN  ──► CLOSED (if probes OK)
+#                                                      └──► OPEN   (if probes fail)
+# =============================================================================
+resilience4j:
+  circuitbreaker:
+    instances:
+      weatherService:
+
+        # -------------------------------------------------------------------
+        # Sliding window
+        # COUNT_BASED: the window tracks the last N calls (as opposed to
+        # TIME_BASED which tracks calls over a time interval).
+        # -------------------------------------------------------------------
+        sliding-window-type: COUNT_BASED
+
+        # Size of the sliding window: the CB evaluates the last 10 calls.
+        sliding-window-size: 10
+
+        # -------------------------------------------------------------------
+        # Minimum calls before the CB will calculate rates and possibly open.
+        # Until 10 calls have been recorded, metrics return -1 (not enough data).
+        # This prevents spurious openings at startup.
+        # -------------------------------------------------------------------
+        minimum-number-of-calls: 10
+
+        # -------------------------------------------------------------------
+        # Failure rate threshold (percentage).
+        # If ≥50% of the last 10 calls failed, the circuit transitions to OPEN.
+        # Example: 5 out of 10 calls threw an exception → 50% → circuit opens.
+        # -------------------------------------------------------------------
+        failure-rate-threshold: 50
+
+        # -------------------------------------------------------------------
+        # Slow call threshold.
+        # Any call taking longer than 3 seconds is recorded as a "slow call".
+        # This helps detect degraded (but not fully failing) downstream services.
+        # -------------------------------------------------------------------
+        slow-call-duration-threshold: 3s
+
+        # If ≥50% of the last 10 calls were slow, the circuit also opens.
+        slow-call-rate-threshold: 50
+
+        # -------------------------------------------------------------------
+        # Wait duration in OPEN state.
+        # After the circuit opens it stays open for 60 seconds. During this
+        # time ALL calls are short-circuited to the fallback immediately
+        # (no actual remote call is made). After 60 s it transitions to HALF_OPEN.
+        # -------------------------------------------------------------------
+        wait-duration-in-open-state: 60s
+
+        # -------------------------------------------------------------------
+        # Half-open state: how many probe calls to allow through.
+        # Once in HALF_OPEN, 3 test calls are permitted. If they succeed the
+        # circuit closes; if they fail it reopens.
+        # -------------------------------------------------------------------
+        permitted-number-of-calls-in-half-open-state: 3
+
+        # Automatically transition from OPEN → HALF_OPEN after the wait duration
+        # elapses, without waiting for the next incoming call to trigger it.
+        automatic-transition-from-open-to-half-open-enabled: true
+
+# =============================================================================
+# Spring Boot Actuator
+# =============================================================================
+# Exposes health and circuit-breaker endpoints for external monitoring.
+# Access at:
+#   http://localhost:9090/actuator/health
+#   http://localhost:9090/actuator/circuitbreakers
+# =============================================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,circuitbreakers
+  health:
+    circuitbreakers:
+      enabled: true
